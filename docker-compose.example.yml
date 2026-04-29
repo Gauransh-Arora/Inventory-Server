@@ -1,0 +1,17 @@
+services:
+  db:
+    image: postgres:15
+    container_name: inventory-postgres-db
+    restart: always
+    environment:
+      POSTGRES_USER: inventory_user
+      POSTGRES_PASSWORD: inventory123
+      POSTGRES_DB: inventory
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    command: ["postgres", "-c", "password_encryption=scram-sha-256"]
+
+volumes:
+  postgres_data:
