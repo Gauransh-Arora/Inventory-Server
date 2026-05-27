@@ -17,6 +17,7 @@
 # Environment variables
 .env
 docker-compose.yml
+*.pem
 
 # IDEs
 .vscode/

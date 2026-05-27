@@ -5,18 +5,16 @@ import (
 	"log"
 	"os"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var DB *pgx.Conn
+var DB *pgxpool.Pool
 
 func ConnectDB(){
 	var err error
-	dbURL := os.Getenv("DB_URL")
-    log.Println("DB_URL:", dbURL) // add this
-	DB, err = pgx.Connect(context.Background(), os.Getenv("DB_URL"))
+	DB, err = pgxpool.New(context.Background(), os.Getenv("DB_URL"))
 	if err != nil{
 		log.Fatal("DB Connection failed: ",err)
 	}
-	log.Println("Connected to DB")
+	log.Println("Connected to DB pool")
 }

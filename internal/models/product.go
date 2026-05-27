@@ -1,11 +1,23 @@
 package models
 
-import "time"
+type Product struct {
+	ID       int     `json:"id"`
+	ICode    int     `json:"icode"`
+	ItemName string  `json:"item_name"`
+	BatchNo  int     `json:"batch_no"`
+	MRP      float64 `json:"mrp"`
+	Barcode  string  `json:"barcode"`
+}
 
-type Product struct{
-	ID int `json:"id"`
-	Barcode string `json:"barcode"`
-	ItemName string `json:"item_name"`
-	MRP float64 `json:"mrp"`
-	CreatedAt time.Time `json:"created_at"`
+type Pagination struct {
+	Page     int 
+	PageSize int 
+}
+
+type PaginatedProducts struct {
+	Data       []Product `json:"data"`
+	Page       int       `json:"page"`
+	PageSize   int       `json:"page_size"`
+	TotalCount int       `json:"total_count"`
+	TotalPages int       `json:"total_pages"`
 }
