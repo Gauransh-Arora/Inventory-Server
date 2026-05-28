@@ -19,14 +19,16 @@ func NewProductHandler(s *service.ProductService) *ProductHandler {
 }
 
 func (h *ProductHandler) CreateProduct(c *gin.Context) {
-	var input models.Product
+	var body struct {
+		Products []models.Product `json:"products"`
+	}
 
-	if err := c.ShouldBindJSON(&input); err != nil {
+	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := h.service.CreateProduct(c, input); err != nil {
+	if err := h.service.CreateProduct(c, body.Products); err != nil {
 		log.Printf("Failed to create product: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return

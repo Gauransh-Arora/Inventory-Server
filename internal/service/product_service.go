@@ -14,7 +14,7 @@ func NewProductService(r *repository.ProductRepository) *ProductService {
 	return &ProductService{repo: r}
 }
 
-func (s *ProductService) CreateProduct(ctx context.Context, p models.Product) error {
+func (s *ProductService) CreateProduct(ctx context.Context, p []models.Product) error {
 	return s.repo.CreateProduct(ctx, p)
 }
 

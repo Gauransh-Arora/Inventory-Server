@@ -18,13 +18,39 @@ func NewProductRepository(db *pgxpool.Pool) *ProductRepository {
 	return &ProductRepository{DB: db}
 }
 
-func (r *ProductRepository) CreateProduct(ctx context.Context, p models.Product) error {
-	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+func (r *ProductRepository) CreateProduct(ctx context.Context, p []models.Product) error {
+	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 
-	query := `INSERT INTO products (icode, item_name, batch_no, mrp, barcode) VALUES ($1,$2,$3,$4,$5)`
-	_, err := r.DB.Exec(ctx, query, p.ICode, p.ItemName, p.BatchNo, p.MRP, p.Barcode)
-	return err
+	tx, err := r.DB.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	// Check if product already exists
+	for _, prod := range p {
+		query := `SELECT id FROM products WHERE icode = $1 AND item_name = $2 AND batch_no = $3 AND mrp = $4 AND barcode = $5 LIMIT 1`
+		id := -1
+		err := tx.QueryRow(ctx, query, prod.ICode, prod.ItemName, prod.BatchNo, prod.MRP, prod.Barcode).Scan(&id)
+
+		if err == nil {
+			return fmt.Errorf("product already exists (icode: %d, name: %s)", prod.ICode, prod.ItemName)
+		} else if err.Error() != "no rows in result set" {
+			return err
+		}
+	}
+
+	// Create products
+	for _, prod := range p {
+		query := `INSERT INTO products (icode, item_name, batch_no, mrp, barcode) VALUES ($1,$2,$3,$4,$5)`
+		_, err := tx.Exec(ctx, query, prod.ICode, prod.ItemName, prod.BatchNo, prod.MRP, prod.Barcode)
+		if err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit(ctx)
 }
 
 func (r *ProductRepository) GetAllProducts(ctx context.Context, icode *int, page models.Pagination) (models.PaginatedProducts, error) {
@@ -55,7 +81,7 @@ func (r *ProductRepository) GetAllProducts(ctx context.Context, icode *int, page
 	offset := (page.Page - 1) * page.PageSize
 	dataArgs := append(args, page.PageSize, offset)
 	dataQuery := fmt.Sprintf(
-		`SELECT id, icode, item_name, batch_no, mrp, barcode FROM products%s ORDER BY id DESC LIMIT $%d OFFSET $%d`,
+		`SELECT id, icode, item_name, batch_no, mrp, barcode FROM products%s ORDER BY id LIMIT $%d OFFSET $%d`,
 		whereClause, argIdx, argIdx+1,
 	)
 

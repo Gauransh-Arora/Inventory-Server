@@ -222,12 +222,17 @@ Revoke the current session, delete active refresh tokens, and add the access tok
 
 ---
 
-### 5. Create Product
-Create a new product record in the system.
+### 5. Create Product (Bulk)
+Create new product records in the system. Accepts a JSON object containing an array of products.
 
 *   **Endpoint:** `POST /api/v1/products`
 *   **Auth Required:** Yes
 *   **Request Body (JSON):**
+    | Field | Type | Description |
+    | :--- | :--- | :--- |
+    | `products` | `array` | A list of product objects to insert. |
+    
+    Each object within the `products` array must contain:
     | Field | Type | Description |
     | :--- | :--- | :--- |
     | `icode` | `integer` | ID of the product from legacy system. |
@@ -239,11 +244,22 @@ Create a new product record in the system.
     *Example:*
     ```json
     {
-      "icode": 1,
-      "item_name": "Premium Soap",
-      "batch_no": 1,
-      "mrp": 45.00,
-      "barcode": "8901030752538"
+      "products": [
+        {
+          "icode": 1,
+          "item_name": "Premium Soap",
+          "batch_no": 1,
+          "mrp": 45.00,
+          "barcode": "8901030752538"
+        },
+        {
+          "icode": 2,
+          "item_name": "Premium Shampoo",
+          "batch_no": 2,
+          "mrp": 120.00,
+          "barcode": "8901030752539"
+        }
+      ]
     }
     ```
 
@@ -261,10 +277,10 @@ Create a new product record in the system.
           "error": "invalid character..."
         }
         ```
-    *   **500 Internal Server Error:** If the database operation fails.
+    *   **500 Internal Server Error:** If the database operation fails (e.g., if a product already exists, the entire batch will be rolled back).
         ```json
         {
-          "error": "database error..."
+          "error": "product already exists (icode: 1, name: Premium Soap)"
         }
         ```
 
