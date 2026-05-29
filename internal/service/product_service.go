@@ -25,3 +25,11 @@ func (s *ProductService) GetAllProducts(ctx context.Context, icode *int, page mo
 func (s *ProductService) GetProductByBarcode(ctx context.Context, barcode string) ([]models.Product, error) {
 	return s.repo.GetProductByBarcode(ctx, barcode)
 }
+
+func(s *ProductService) UpdateProduct(ctx context.Context, id int, data models.Product) error {
+	return s.repo.UpdateProduct(ctx, id, data)
+}
+
+func(s *ProductService) DeleteProducts(ctx context.Context, ids []int) error{
+	return s.repo.DeleteProducts(ctx, ids)
+}

@@ -138,3 +138,33 @@ func (r *ProductRepository) GetProductByBarcode(ctx context.Context, barcode str
 	}
 	return products, nil
 }
+
+func (r *ProductRepository) UpdateProduct(ctx context.Context, id int, data models.Product) error {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	query := `UPDATE products SET icode=$1, item_name=$2, batch_no=$3, mrp=$4, barcode=$5 where id = $6`
+	_, err := r.DB.Exec(ctx, query, data.ICode, data.ItemName, data.BatchNo, data.MRP, data.Barcode, id)
+	return err
+}
+
+func (r *ProductRepository) DeleteProducts(ctx context.Context, ids []int) error {
+	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	defer cancel()
+
+	tx, err := r.DB.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	for _, id := range ids {
+		query := `DELETE FROM products WHERE id = $1`
+		_, err := tx.Exec(ctx, query, id)
+		if err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit(ctx)
+}

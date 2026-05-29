@@ -30,5 +30,7 @@ func SetupRoutes(r *gin.Engine, inv *handler.InventoryHandler, prod *handler.Pro
 		protected.POST("/products", prod.CreateProduct)
 		protected.GET("/products", prod.GetAllProducts)
 		protected.GET("/products/:barcode", prod.GetProductByBarcode)
+		protected.PATCH("/products/:id", prod.UpdateProduct)
+		protected.DELETE("/products", prod.DeleteProducts)
 	}
 }

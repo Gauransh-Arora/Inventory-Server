@@ -97,3 +97,48 @@ func (h *ProductHandler) GetProductByBarcode(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, products)
 }
+
+func (h *ProductHandler) UpdateProduct(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid value for 'id', must be an integer"})
+		return
+	}
+
+	var input models.Product
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	
+	if input.ICode == 0 || input.ItemName == "" || input.BatchNo == 0 || input.MRP == 0 || input.Barcode == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "all product fields (icode, item_name, batch_no, mrp, barcode) are required and cannot be empty"})
+		return
+	}
+
+	err = h.service.UpdateProduct(c, id, input)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "product updated successfully"})
+
+}
+
+func(h *ProductHandler) DeleteProducts(c *gin.Context){
+	var input struct{
+		IDs []int `json:"ids"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil{
+		c.JSON(http.StatusBadRequest, gin.H{"error":err.Error()})
+		return
+	}
+	err := h.service.DeleteProducts(c, input.IDs)
+	if err != nil{
+		log.Printf("Failed to delete products: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "products deleted successfully"})
+}
